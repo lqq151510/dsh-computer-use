@@ -10,6 +10,15 @@ Screenshots use `/usr/sbin/screencapture`; mouse, keyboard and accessibility wor
 
 给 DeepSeek Harness 的 macOS「电脑操作」插件：Agent 能截屏看见桌面，并用原生 CoreGraphics 事件移动鼠标、点击、拖拽、滚动、打字和按快捷键。
 
+## 实际跑起来的样子
+
+下面两张是真实运行截图，截取自本机 macOS 27：Agent 先用 `computer_read` 读屏、再用 `computer_act` 操作，然后回读结果。
+
+| 计算器：读屏 → 按标题点击 → 回读 | 后台窗口：不抢焦点直接写 |
+| --- | --- |
+| <img src="assets/screenshots/calculator.png" width="260" alt="calculator"> | <img src="assets/screenshots/textedit-background-write.png" width="520" alt="background write"> |
+| 用 `computer_act` 依次 press `7`、`乘`、`6`、`等于`（按可见标题，不按坐标），再用 `computer_read` 读到 `7 × 6` 与 `42`。 | TextEdit 在后台（前台是计算器）时，`computer_act action=set_value` 直接写入文本；之后 `osascript` 回读一致。 |
+
 ## 它注册了什么
 
 | 工具 | 作用 |
@@ -32,6 +41,16 @@ Screenshots use `/usr/sbin/screencapture`; mouse, keyboard and accessibility wor
 `computer_act` 带「元素指纹」（role + 标题 + 坐标）：界面在两次调用之间变了导致 path 漂移时，会重新按指纹在树里找同一个控件，而不是点错按钮。
 
 坐标统一是 **屏幕 point 坐标**，原点在主屏左上角。截图默认降采样到 point 尺寸，所以「图上的像素」就是「点击的 point」；返回值里还带 `origin` 和 `pointsPerPixel` 用于窗口/区域截图换算。
+
+## 与同类插件有什么不同
+
+Dsh 插件列表里已经有好几个 macOS 电脑操作插件（辅助功能优先的、视觉优先的、包一层 Cua Driver 的都有）。下面只列出本插件在实现上做的取舍，方便判断是否合用，不是在比较谁更好：
+
+- **读屏是一个工具，不是一条流水线**：`computer_read` 一次返回「辅助功能树 + OCR 文字」，两条通道共用同一套屏幕 point 坐标，模型不用先选通道，也不用自己做两套换算。
+- **按语义操作，不靠坐标碰运气**：`computer_act` 用 `index` 或可见标题在 AX 里定位元素后 `press` / `focus` / `set_value` / `click`，过程中不移动真实指针；每次操作带 role+标题+位置指纹，界面在两次调用之间变化时按指纹重新找同一个控件（上面计算器截图里，清除按钮标题在 `AC` / `C` 之间变化，就是靠这条继续点中的）。
+- **可以写后台窗口**：`set_value` 直接作用于目标 app 的 AX 元素，不要求它在前台（第二张截图）。
+- **没有外部运行时**：不打包 DMG、不拉 driver 进程、仓库里也没有预编译二进制——Swift 助手在首次调用时由本机 `swiftc` 编译（约 120 KB，源码可审计），之后按源码哈希缓存。
+- **失败时说下一步怎么做**：定位不到元素返回 `element-not-found` 并建议重新读屏或改用坐标；权限缺失直接说是哪一项、去哪个系统面板开。
 
 ## 授权（一次性）
 
