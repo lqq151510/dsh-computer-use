@@ -753,7 +753,7 @@ case "ocr":do {
                               pointsHeight: number("pointsHeight", 0),
                               originX: number("originX", 0),
                               originY: number("originY", 0),
-                              fast: bool("fast", true),
+                              fast: bool("fast", false),
                               maxDimension: number("maxDimension", 2000))
   if let error { fail(error) }
   emit(["ok": true, "lines": lines, "count": lines.count])
