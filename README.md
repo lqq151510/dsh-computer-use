@@ -30,7 +30,7 @@ Screenshots use `/usr/sbin/screencapture`; mouse, keyboard and accessibility wor
 | 工具 | 作用 |
 | --- | --- |
 | `computer_permissions` | 检查「辅助功能 / 屏幕录制」授权，缺哪个、去哪开 |
-| `computer_read` | **读懂屏幕**：辅助功能树（可点元素 role/标题/坐标/index）+ OCR 文字（带坐标），一次拿到 |
+| `computer_read` | **读懂屏幕**：辅助功能树（可点元素 role/标题/坐标/index）+ OCR 文字（带坐标），一次拿到；给 `app` 或 `window` 可以读后台窗口，不用切前台 |
 | `computer_act` | 按 `computer_read` 的 index 或标题直接 `press` / `focus` / `set_value` / `click`，不靠猜坐标 |
 | `computer_screenshot` | 截全屏 / 窗口 / 区域，图片直接进模型上下文（需要看像素时用） |
 | `computer_windows` | 列出窗口、查前台 app、把某个 app 切到前台 |
