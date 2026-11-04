@@ -19,6 +19,12 @@ Screenshots use `/usr/sbin/screencapture`; mouse, keyboard and accessibility wor
 | <img src="assets/screenshots/calculator.png" width="260" alt="calculator"> | <img src="assets/screenshots/textedit-background-write.png" width="520" alt="background write"> |
 | 用 `computer_act` 依次 press `7`、`乘`、`6`、`等于`（按可见标题，不按坐标），再用 `computer_read` 读到 `7 × 6` 与 `42`。 | TextEdit 在后台（前台是计算器）时，`computer_act action=set_value` 直接写入文本；之后 `osascript` 回读一致。 |
 
+**第三张：OCR 通道。** 下图里的文字全部来自一张 PNG（用 Preview 打开），辅助功能树里没有任何文本节点。`computer_read` 用 Vision 逐行识别，并把每行的 `x / y / width / height` 一起返回——红框和编号是按真实返回坐标画出来的，不是示意图：
+
+<img src="assets/screenshots/ocr-text-with-coordinates.png" width="760" alt="OCR text with coordinates">
+
+坐标是屏幕 point，可以直接交给 `computer_mouse` 的 `centerX / centerY`，也可以先按文字判断这一行是什么、再决定点不点。
+
 ## 它注册了什么
 
 | 工具 | 作用 |
