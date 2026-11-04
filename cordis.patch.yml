@@ -1,0 +1,15 @@
+# dsh-computer-use — one Host row, five `computer_*` tools.
+#
+# Defaults are deliberately conservative:
+#   allowInput: true     flip to false to keep screenshots but disable input
+#   resolution: points   screenshot is 1 image px per point (Retina-friendly)
+#   blockedApps          frontmost apps that reject synthetic input
+- insert:
+    - id: computer-use
+      name: dsh-computer-use
+      config:
+        allowInput: true
+        resolution: points
+        blockedApps:
+          - 1Password
+          - Keychain Access

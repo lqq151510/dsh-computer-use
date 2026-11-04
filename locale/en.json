@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Computer Use",
+    "description": "Lets the Agent read the screen and drive this Mac: accessibility elements plus OCR text with coordinates, semantic press/fill by element, screenshots, mouse move/click/drag/scroll, typing and shortcuts — through a compiled CoreGraphics + Vision helper."
+  }
+}
