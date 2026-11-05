@@ -1,6 +1,6 @@
 # dsh-computer-use
 
-macOS computer-use plugin for DeepSeek Harness. It registers seven `computer_*` tools: `computer_permissions`, `computer_screenshot`, `computer_windows`, `computer_mouse`, `computer_keyboard`, `computer_read` and `computer_act`.
+macOS computer-use plugin for DeepSeek Harness. It registers eight `computer_*` tools: `computer_permissions`, `computer_screenshot`, `computer_windows`, `computer_mouse`, `computer_keyboard`, `computer_sequence`, `computer_read` and `computer_act`.
 
 - **Screen reading** — `computer_read` returns the accessibility tree (role, title, value, actions, screen coordinates, stable `index`) and Vision OCR text with coordinates in one call.
 - **Semantic actions** — `computer_act` presses / focuses / sets values / clicks an element by `index` or by visible label through the accessibility API, so it can drive a background window without moving the real pointer. Each action carries a role+title+position fingerprint and re-locates the element when the tree shifts between calls.
@@ -34,8 +34,9 @@ Screenshots use `/usr/sbin/screencapture`; mouse, keyboard and accessibility wor
 | `computer_act` | 按 `computer_read` 的 index 或标题直接 `press` / `focus` / `set_value` / `click`，不靠猜坐标 |
 | `computer_screenshot` | 截全屏 / 窗口 / 区域，图片直接进模型上下文（需要看像素时用） |
 | `computer_windows` | 列出窗口、查前台 app、把某个 app 切到前台 |
-| `computer_mouse` | `move` `click` `double_click` `right_click` `drag` `scroll` `position` |
-| `computer_keyboard` | `type`（含中文）`key`（return/tab/esc/方向键/F 键）`hotkey`（cmd+shift+t） |
+| `computer_mouse` | `move`（支持 `dx/dy` 相对位移）`click`（`repeat` 连发 / `intervalMs` / `downMs`）`hold` `double_click` `right_click` `drag` `scroll` `position` |
+| `computer_keyboard` | `type`（含中文）`key`（return/tab/esc/方向键/F 键，`holdMs` 控制按住时长）`hotkey`（cmd+shift+t） |
+| `computer_sequence` | 把一串输入原语按顺序一次执行（游戏连招/组合操作），比逐个工具调用快一个数量级 |
 
 ### 推荐工作流：先读屏，再动手
 
@@ -57,6 +58,24 @@ Dsh 插件列表里已经有好几个 macOS 电脑操作插件（辅助功能优
 - **可以写后台窗口**：`set_value` 直接作用于目标 app 的 AX 元素，不要求它在前台（第二张截图）。
 - **没有外部运行时**：不打包 DMG、不拉 driver 进程、仓库里也没有预编译二进制——Swift 助手在首次调用时由本机 `swiftc` 编译（约 120 KB，源码可审计），之后按源码哈希缓存。
 - **失败时说下一步怎么做**：定位不到元素返回 `element-not-found` 并建议重新读屏或改用坐标；权限缺失直接说是哪一项、去哪个系统面板开。
+
+## 游戏模式与低延迟输入
+
+鼠标键盘走一个独立的轻量 Swift 助手（`native/CUInput.swift`，只链 CoreGraphics），首次调用后以 unix socket 常驻 daemon（空闲 15 分钟自动退出），省掉每次调用的进程启动开销。实测本机（M 系列，daemon 已热）：
+
+| 操作 | 普通模式 | game 模式 |
+| --- | --- | --- |
+| `move`（绝对/相对） | ~30 ms | **~0.2 ms** |
+| `key` 单键 | ~50 ms | **~10 ms** |
+| `click` 单击 | ~45 ms | **~5 ms** |
+| `sequence` 连招 | 一次调用走完，总耗时 = 各步之和 | 同左 |
+
+- `game: true` 砍掉事件间隔（按下-抬起 3ms、连发间隔 40ms），换取最低延迟；游戏漏检按键时把 `holdMs` 调大到 16–30（一帧以上）。
+- `computer_mouse` 的 `move` 给 `dx/dy` 走相对位移（事件同时带 delta 字段，游戏视角转动两套都能读到）；`click` 的 `repeat` 是独立连发（每次 clickState=1），`count` 才是 UI 多击协议。
+- `humanize: true` 用二次贝塞尔轨迹 + smoothstep 缓动 + ±0.7px 抖动 + 每步 6–14ms 随机节奏移动光标，观感接近人手（默认关）。
+- `computer_sequence` 的每步 `do=move|click|hold|drag|scroll|key|type|wait`，参数与对应工具同名，`afterMs` 是步后等待，`stopOnError` 默认 true；返回每步 `tookMs`。
+
+这些是「把输入发得又快又稳」的正当手段，不用于绕过任何平台的人机验证或反作弊。
 
 ## 授权（一次性）
 

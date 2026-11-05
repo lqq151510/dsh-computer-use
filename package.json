@@ -14,6 +14,7 @@
     "index.js",
     "lib/*.js",
     "native/ComputerUse.swift",
+    "native/CUInput.swift",
     "cordis.patch.yml",
     "locale/*.json",
     "icon.svg",

@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "电脑操作",
-    "description": "让 Agent 读懂屏幕并直接操作这台 Mac：读辅助功能元素与 OCR 文字（带坐标）、按元素语义点击/填值、截图、移动/点击/拖拽/滚动鼠标、打字与快捷键 —— 底层是编译好的 CoreGraphics + Vision 原生助手。"
+    "description": "让 Agent 读懂屏幕并直接操作这台 Mac：读辅助功能元素与 OCR 文字（带坐标）、按元素语义点击/填值、截图、移动/点击/拖拽/滚动鼠标、打字与快捷键、游戏级连招序列 —— 底层是编译好的 CoreGraphics + Vision 原生助手，输入走常驻 daemon 低延迟通道。"
   }
 }
